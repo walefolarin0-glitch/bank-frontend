@@ -62,27 +62,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: Continues-Integration_build_and_push
     steps:
-      - name: Update Kubernetes manifest
-        env:
+    - name: Checkout repository.
+      env:
           GIT_USERNAME: ${{ secrets.GIT_USERNAME }}
           GIT_PASSWORD: ${{ secrets.GIT_PASSWORD }}
-        run: |
-          # Test credentials first
-          curl -s -o /dev/null -w "%{http_code}" \
-            -u "${GIT_USERNAME}:${GIT_PASSWORD}" \
-            https://api.github.com/repos/walefolarin0-glitch/kubernetes-manifest
+      run: |
+         git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/walefolarin0-glitch/kubernetes-manifest.git
+         
+         cd kubernetes-manifest
+         git config --global user.email "walefolarin0@gmail.com"
+         git config --global user.name "walefolarin0-glitch"
 
-          # Clone repo
-          git clone https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/walefolarin0-glitch/kubernetes-manifest.git
+         sed -i "s+${{ vars.ECR_REPO }}/bank-frontend:.*+${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}+g" ./bank-project/frontend.yaml
 
-          cd kubernetes-manifest
-          git config user.email "walefolarin0@gmail.com"
-          git config user.name "walefolarin0-glitch"
+         cat ./bank-project/frontend.yaml | grep -q "${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}"
 
-          sed -i "s+${{ vars.ECR_REPO }}/bank-frontend:.*+${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}+g" ./bank-project/frontend.yaml
-
-          grep "bank-frontend" ./bank-project/frontend.yaml
-
-          git add bank-project/frontend.yaml
-          git commit -m "Update frontend image to version ${{ github.run_number }}" || true
-          git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/walefolarin0-glitch/kubernetes-manifest.git main
+         git add bank-project/frontend.yaml
+         git commit -m "Update frontend image to version ${{ github.run_number }}"
+         git push origin main
