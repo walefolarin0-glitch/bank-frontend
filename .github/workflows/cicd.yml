@@ -27,7 +27,7 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: eu-north-1
+        aws-region: us-east-1
 
 
     - name: Build container image
@@ -35,14 +35,14 @@ jobs:
 
     - name: Log in to ECR with short-lived credentials
       run: |
-        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
+        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
   
     - name: Tag Docker image
       run: docker tag bank-frontend:latest ${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}
     
     - name: Create ECR repository if not exists
       run: |
-        aws ecr describe-repositories --repository-names bank-frontend --region eu-north-1 || aws ecr create-repository --repository-name bank-frontend --region eu-north-1
+        aws ecr describe-repositories --repository-names bank-frontend --region us-east-1 || aws ecr create-repository --repository-name bank-frontend --region us-east-1
 
     - name: Push image to ECR
       run: docker push ${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}
