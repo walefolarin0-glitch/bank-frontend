@@ -17,27 +17,27 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        repository: digitalwitchdemo/main_bank_app_frontend
+        repository: walefolarin0-glitch/bank-frontend
         ref: main
 
 
     - name: Log in to awscli
-      uses: aws-actions/configure-aws-credentials@v3
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
+        aws-region: eu-north-1
 
 
     - name: Build container image
-      run: docker build -t bank-app-frontend:latest .
+      run: docker build -t bank-frontend:latest .
 
     - name: Log in to ECR with short-lived credentials
       run: |
-        aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
+        aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin ${{ vars.ECR_REPO }}
   
     - name: Tag Docker image
-      run: docker tag bank-app-frontend:latest ${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}
+      run: docker tag bank-frontend:latest ${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}
     
     - name: Push image to ECR
       run: docker push ${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}
@@ -45,7 +45,7 @@ jobs:
 
     - name: Clean up Docker image locally
       run: |
-        docker rmi bank-app-frontend:latest
+        docker rmi bank-frontend:latest
         docker rmi ${{ vars.ECR_REPO }}/bank-frontend:${{ github.run_number }}
 
     - name: Clean up GitHub repo on runner
